@@ -2,51 +2,27 @@ class Day7(input: List<String>) {
 
     val bags = input.map { Bag.parse(it) }
 
-    fun solve1(): Int {
-        val outerColors = mutableSetOf<String>()
-        val colorsToCheck = mutableSetOf("shiny gold")
+    fun solve1() = countUp("shiny gold").distinct().count()
 
-        while (colorsToCheck.isNotEmpty()) {
-            val color = colorsToCheck.first().also { colorsToCheck.remove(it) }
+    fun solve2() = sumDown("shiny gold") - 1
 
-            val matchedBags = bags.filter { bag -> bag.content.any { content -> content.key == color } }
-                .filter { it.color !in outerColors }
-                .map { it.color }
+    private fun sumDown(color: String): Int = 1 + bags
+        .first { bag -> bag.color == color }.content
+        .map { (color, count) -> count * sumDown(color) }.sum()
 
-            outerColors.addAll(matchedBags)
-            colorsToCheck.addAll(matchedBags)
-        }
-
-        return outerColors.size
-    }
-
-    fun solve2(): Int {
-        var result = 0
-        val bagsToCount = mutableListOf("shiny gold" to 1)
-
-        while (bagsToCount.isNotEmpty()) {
-            val (color, count) = bagsToCount.first().also { bagsToCount.remove(it) }
-
-            val matchedBags = bags.filter { bag -> bag.color == color }
-                .flatMap { bag -> bag.content.map { it.key to it.value * count } }
-
-            bagsToCount.addAll(matchedBags)
-
-            result += count
-        }
-
-        return result - 1
-    }
+    private fun countUp(color: String): List<Bag> = bags
+        .filter { bag -> bag.content.any { content -> content.key == color } }
+        .let { matchedBags -> matchedBags + matchedBags.flatMap { countUp(it.color) } }
 
     class Bag(val color: String, val content: Map<String, Int>) {
 
         companion object {
-            private val nameRegex = Regex("^(.*?) bag")
-            private val containsRegex = Regex("([0-9])+ (.*?) bag")
+            private val REGEX_NAME = Regex("^(.*?) bag")
+            private val REGEX_CONTENT = Regex("([0-9])+ (.*?) bag")
 
             fun parse(input: String): Bag {
-                val (name) = nameRegex.find(input)!!.destructured
-                val contains = containsRegex.findAll(input).map { it.destructured }
+                val (name) = REGEX_NAME.find(input)!!.destructured
+                val contains = REGEX_CONTENT.findAll(input).map { it.destructured }
                     .associateBy({ (_, color) -> color }, { (count) -> count.toInt() })
 
                 return Bag(name, contains)
