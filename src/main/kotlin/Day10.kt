@@ -6,35 +6,14 @@ class Day10(input: List<String>) {
         .count { (curr, next) -> next - curr == 1 }
         .let { (it + 1) * (adapters.size - it) }
 
-    fun solve2() : Long {
-        val starting = GroupData(0, 1)
-        val groups = mutableListOf(starting)
-        var result = 0L
-
-        while (groups.isNotEmpty()) {
-            println("##### ${groups.map { it.curr }}")
-            val group = groups.first().also { groups.remove(it) }
-            println("##### ${group.curr} ${group.joined}")
-
-            result = group.joined
-
-            val nextAdapters = adapters.sorted().filter { it > group.curr && it - 3 <= group.curr }
-
-            nextAdapters.forEach { next ->
-                val groupToJoin = groups.find { it.curr == next }
-                if (groupToJoin != null) {
-                    groupToJoin.joined += group.joined
-                } else {
-                    groups += GroupData(next, group.joined)
-                }
+    fun solve2(): Long = adapters.associateWith { 0L }
+        .toSortedMap().apply { put(0, 1) }
+        .also { map ->
+            map.forEach { (index, count) ->
+                adapters.filter { adapter -> adapter > index && adapter - 3 <= index }
+                    .forEach { adapter -> map.merge(adapter, count, Long::plus) }
             }
-        }
-
-        return result
-    }
-
-
-    class GroupData(val curr: Int, var joined: Long)
+        }.values.last()
 
 }
 
