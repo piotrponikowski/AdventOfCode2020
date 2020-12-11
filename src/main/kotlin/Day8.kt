@@ -10,9 +10,9 @@ class Day8(input: List<String>) {
 
     data class Instruction(val operation: String, val argument: Int) {
         fun fix() = when (operation) {
-            "jmp" -> Instruction("nop", argument)
-            "nop" -> Instruction("jmp", argument)
-            else -> Instruction(operation, argument)
+            "jmp" -> copy(operation = "nop")
+            "nop" -> copy(operation = "jmp")
+            else -> copy()
         }
 
         companion object {
