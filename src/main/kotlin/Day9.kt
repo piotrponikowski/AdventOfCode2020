@@ -1,31 +1,18 @@
-class Day9(input: List<String>) {
+class Day9(input: List<String>, private val preamble: Int = 25) {
 
     private val numbers = input.map { it.toLong() }
 
-    fun solve1(preamble: Int) = (preamble until numbers.size)
-        .filterNot { i -> (i - preamble until i).any { p1 -> (i - preamble until i).any { p2 -> p1 != p2 && numbers[p1] + numbers[p2] == numbers[i] } } }
-        .first().let { numbers[it] }
+    fun solve1() = numbers.windowed(preamble + 1)
+        .map { Pair(it.dropLast(1), it.last()) }
+        .first { (list, target) -> list.none { target - it in list } }
+        .let { it.second }
 
-    fun solve2(invalid: Long): Long {
-        for ((startIndex, start) in numbers.withIndex()) {
-            val sum = mutableListOf<Long>(start)
-
-            for ((nextIndex, next) in numbers.withIndex()) {
-                if (nextIndex <= startIndex) {
-                    continue
-                }
-
-                sum += next
-
-                if (sum.sum() == invalid) {
-                    return sum.minOrNull()!! + sum.maxOrNull()!!
-                } else if (sum.sum() > invalid) {
-                    break
-                }
-            }
-        }
-
-        throw IllegalStateException("Solution not found.")
-
+    fun solve2() = solve1().let { invalid ->
+        numbers.indices.mapNotNull { start ->
+            numbers.indices.drop(start + 1).mapNotNull { end ->
+                numbers.subList(start, end).takeIf { it.sum() == invalid }
+            }.firstOrNull()
+        }.first().let { (it.maxOrNull() ?: 0) + (it.minOrNull() ?: 0) }
     }
+
 }
