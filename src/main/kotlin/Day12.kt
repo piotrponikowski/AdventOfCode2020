@@ -9,37 +9,34 @@ class Day12(input: List<String>) {
 
     fun solve1() = instructions.fold(Ferry()) { ferry, instruction -> ferry.execute(instruction) }.distance()
 
-    fun solve2() = instructions.fold(Ferry(waypoint = Point(10, -1))) { ferry, instruction ->
-        ferry.execute(instruction, true)
-    }.distance()
+    fun solve2() = instructions
+        .fold(Ferry(waypoint = Position(10, -1))) { ferry, instruction -> ferry.execute(instruction, true) }
+        .distance()
 
-    data class Ferry(val position: Point = Point(0, 0), val waypoint: Point = Point(1, 0)) {
+    data class Ferry(val position: Position = Position(0, 0), val waypoint: Position = Position(1, 0)) {
         fun execute(instruction: Instruction, moveWaypoint: Boolean = false): Ferry {
             return when (instruction.action) {
                 Action.N -> move(0, -instruction.value, moveWaypoint)
                 Action.S -> move(0, instruction.value, moveWaypoint)
                 Action.W -> move(-instruction.value, 0, moveWaypoint)
                 Action.E -> move(instruction.value, 0, moveWaypoint)
-                Action.L -> rotate(instruction.value, false)
-                Action.R -> rotate(instruction.value, true)
+                Action.L -> rotate(instruction.value / 90, false)
+                Action.R -> rotate(instruction.value / 90, true)
                 Action.F -> move(waypoint.x * instruction.value, waypoint.y * instruction.value, false)
             }
         }
 
         fun distance() = with(position) { x.absoluteValue + y.absoluteValue }
 
-        private fun rotate(angle: Int, clockwise: Boolean) = copy(waypoint = waypoint.rotate(angle / 90, clockwise))
+        private fun rotate(steps: Int, clockwise: Boolean) = copy(waypoint = (1..steps)
+            .fold(waypoint) { p, _ -> if (clockwise) Position(-p.y, p.x) else Position(p.y, -p.x) })
 
         private fun move(dx: Int, dy: Int, moveWaypoint: Boolean) =
-            if (moveWaypoint) copy(waypoint = this.waypoint.move(dx, dy)) else copy(position = position.move(dx, dy))
+            if (moveWaypoint) copy(waypoint = Position(waypoint.x + dx, waypoint.y + dy))
+            else copy(position = Position(position.x + dx, position.y + dy))
     }
 
-    data class Point(val x: Int, val y: Int) {
-        fun rotate(steps: Int, clockwise: Boolean) =
-            (1..steps).fold(this) { p, _ -> if (clockwise) Point(-p.y, p.x) else Point(p.y, -p.x) }
-
-        fun move(dx: Int, dy: Int) = Point(x + dx, y + dy)
-    }
+    data class Position(val x: Int, val y: Int)
 
     data class Instruction(val action: Action, val value: Int)
 
