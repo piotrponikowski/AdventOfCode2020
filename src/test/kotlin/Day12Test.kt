@@ -6,7 +6,6 @@ class Day12Test : FunSpec({
     val exampleInput = Utils.readLines("day12.txt", true)
     val realInput = Utils.readLines("day12.txt")
 
-
     context("Part 1") {
         test("should solve example") {
             Day12(exampleInput).solve1() shouldBe 25
@@ -19,12 +18,11 @@ class Day12Test : FunSpec({
 
     context("Part 2") {
         test("should solve example") {
-            Day12(exampleInput).solve1() shouldBe 286
+            Day12(exampleInput).solve2() shouldBe 286
         }
 
         test("should solve real input") {
-            Day12(realInput).solve1() shouldBe 46530
+            Day12(realInput).solve2() shouldBe 46530
         }
     }
-
 })
