@@ -18,22 +18,49 @@ class Day12(input: List<String>) {
     class Ferry {
         var position = Position(0, 0)
         var direction = Direction.E
+        var waypoint = Position(10, -1)
 
         fun execute(instruction: Instruction) {
             when (instruction.action) {
-                Action.N -> position.y -= instruction.value
-                Action.S -> position.y += instruction.value
-                Action.W -> position.x -= instruction.value
-                Action.E -> position.x += instruction.value
-                Action.L -> direction = direction.rotateLeft(instruction.value / 90)
-                Action.R -> direction = direction.rotateRight(instruction.value / 90)
-                Action.F -> execute(Instruction(Action.valueOf(direction.name), instruction.value))
+                Action.N -> waypoint.y -= instruction.value
+                Action.S -> waypoint.y += instruction.value
+                Action.W -> waypoint.x -= instruction.value
+                Action.E -> waypoint.x += instruction.value
+                Action.L -> waypoint.rotateLeft(instruction.value / 90)
+                Action.R -> waypoint.rotateRight(instruction.value / 90)
+                Action.F -> {
+                    position.x += waypoint.x * instruction.value
+                    position.y += waypoint.y * instruction.value
+                }
             }
         }
     }
 
     data class Instruction(val action: Action, val value: Int)
-    data class Position(var x: Int, var y: Int)
+    data class Position(var x: Int, var y: Int) {
+
+        fun rotateRight(steps: Int) {
+            (1..steps).forEach {
+                val tx = x
+                val ty = y
+
+                x = -ty
+                y = tx
+            }
+        }
+
+        fun rotateLeft(steps: Int) {
+            (1..steps).forEach {
+                val tx = x
+                val ty = y
+
+                x = ty
+                y = -tx
+            }
+        }
+
+
+    }
     enum class Action { N, S, E, W, L, R, F }
     enum class Direction {
         N, S, E, W;
