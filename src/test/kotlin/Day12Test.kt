@@ -9,16 +9,22 @@ class Day12Test : FunSpec({
 
     context("Part 1") {
         test("should solve example") {
-            Day12(exampleInput).solve() shouldBe 25
+            Day12(exampleInput).solve1() shouldBe 25
         }
 
         test("should solve real input") {
-            Day12(realInput).solve() shouldBe 25
+            Day12(realInput).solve1() shouldBe 1177
         }
     }
 
     context("Part 2") {
+        test("should solve example") {
+            Day12(exampleInput).solve1() shouldBe 286
+        }
 
+        test("should solve real input") {
+            Day12(realInput).solve1() shouldBe 46530
+        }
     }
 
 })
