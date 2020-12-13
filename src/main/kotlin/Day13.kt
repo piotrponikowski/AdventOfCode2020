@@ -1,41 +1,27 @@
-class Day13
+class Day13(input: List<String>) {
 
-fun main() {
-//    val input = Utils.readLines("day13.txt")
-//    val ts = input[0].toInt()
-//    val ids = input[1].split(",").filter { it != "x" }.map { it.toInt() }
-//
-//    val result = ids.map {
-//        val mod = (ts % it)
-//        val result = if (mod == 0) 0 else it - mod
-//        it to result
-//    }
-//        .sortedBy { it.second }
-//        .first().let { it.first * it.second}
-//
-//
-//    println(ts)
-//    println(ids)
-//    println(result)
+    val timestamp = input[0].toLong()
+    val buses = input[1].split(",").mapIndexed { index, data -> index to data }
+        .filter { it.second != "x" }
+        .map { (index, data) -> index to data.toLong() }
 
-    val input = Utils.readLines("day13.txt")
+    fun solve1() = buses.map { (index, id) -> id to id - (timestamp % id) }
+        .minByOrNull { it.second }!!
+        .let { it.first * it.second }
 
-    val test = input[1].split(",").mapIndexed { index, id -> index to id }.filter { (index, id) -> id != "x" }
-        .map { (index, id) -> index to id.toInt() }
+    fun solve2(): Long  {
+        var t = 0L
+        var step = buses[0].second
+        var next = 1
 
-    var t = 0L
-    var step = test[0].second.toLong()
-    var next = 1
-
-    while(next < test.size) {
-        t += step
-        if((t + test[next].first) % test[next].second == 0L) {
-            step = lcm(step, test[next++].second.toLong())
+        while (next < buses.size) {
+            t += step
+            if ((t + buses[next].first) % buses[next].second == 0L) {
+                step = lcm(step, buses[next++].second.toLong())
+            }
         }
+
+        return t
     }
-
-    println(test)
-    println(t)
-
 
 }
