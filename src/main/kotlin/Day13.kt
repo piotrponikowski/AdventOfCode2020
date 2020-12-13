@@ -1,27 +1,26 @@
 class Day13(input: List<String>) {
 
-    val timestamp = input[0].toLong()
-    val buses = input[1].split(",").mapIndexed { index, data -> index to data }
-        .filter { it.second != "x" }
-        .map { (index, data) -> index to data.toLong() }
+    val timestamp = input.first().toLong()
+    val buses = input.last().split(",")
+        .mapIndexedNotNull { index, data -> data.takeIf { it != "x" }?.let { Bus(index, data.toLong()) } }
 
     fun solve1() = buses.map { (index, id) -> id to id - (timestamp % id) }
         .minByOrNull { it.second }!!
         .let { it.first * it.second }
 
-    fun solve2(): Long  {
-        var t = 0L
-        var step = buses[0].second
-        var next = 1
+    fun solve2(): Long {
+        var time = 0L
+        var step = buses.first().id
 
-        while (next < buses.size) {
-            t += step
-            if ((t + buses[next].first) % buses[next].second == 0L) {
-                step = lcm(step, buses[next++].second.toLong())
+        buses.drop(1).forEach { bus ->
+            while ((time + bus.index) % bus.id != 0L) {
+                time += step
             }
+            step = lcm(step, bus.id)
         }
 
-        return t
+        return time
     }
 
+    data class Bus(val index: Int, val id: Long)
 }
