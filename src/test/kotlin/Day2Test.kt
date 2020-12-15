@@ -1,3 +1,4 @@
+import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -9,27 +10,33 @@ class Day2Test : FunSpec({
     context("Part 1") {
 
         test("should parse example input") {
-            val policies = Day2(exampleInput).parse();
+            val policies = Day2(exampleInput).parse()
             policies.size shouldBe 3
 
-            policies[0].from shouldBe 1
-            policies[0].to shouldBe 3
-            policies[0].symbol shouldBe 'a'
-            policies[0].text shouldBe "abcde"
+            assertSoftly(policies[0]) {
+                from shouldBe 1
+                to shouldBe 3
+                symbol shouldBe 'a'
+                text shouldBe "abcde"
+            }
 
-            policies[1].from shouldBe 1
-            policies[1].to shouldBe 3
-            policies[1].symbol shouldBe 'b'
-            policies[1].text shouldBe "cdefg"
+            assertSoftly(policies[1]) {
+                from shouldBe 1
+                to shouldBe 3
+                symbol shouldBe 'b'
+                text shouldBe "cdefg"
+            }
 
-            policies[2].from shouldBe 2
-            policies[2].to shouldBe 9
-            policies[2].symbol shouldBe 'c'
-            policies[2].text shouldBe "ccccccccc"
+            assertSoftly(policies[2]) {
+                from shouldBe 2
+                to shouldBe 9
+                symbol shouldBe 'c'
+                text shouldBe "ccccccccc"
+            }
         }
 
         test("should validate example policies") {
-            val policies = Day2(exampleInput).parse();
+            val policies = Day2(exampleInput).parse()
 
             policies[0].isValidByOldRule() shouldBe true
             policies[1].isValidByOldRule() shouldBe false
@@ -47,10 +54,10 @@ class Day2Test : FunSpec({
         }
     }
 
-    context("Part 2"){
+    context("Part 2") {
 
         test("should validate example policies") {
-            val policies = Day2(exampleInput).parse();
+            val policies = Day2(exampleInput).parse()
 
             policies[0].isValidByNewRule() shouldBe true
             policies[1].isValidByNewRule() shouldBe false
