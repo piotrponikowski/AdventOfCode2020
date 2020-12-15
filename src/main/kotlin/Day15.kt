@@ -1,37 +1,26 @@
 class Day15(input: String) {
 
-    val numbers = input.split(",").map { it.toInt() }
+    private val numbers = input.split(",").map { it.toInt() }
 
-    val game = sequence {
-        val indexes = mutableMapOf<Int, Int>()
+    fun solve1() = playUntil(2020)
 
-        numbers.take(numbers.size - 1).forEachIndexed { index, number ->
-            indexes[number] = index + 1
-            yield(number)
+    fun solve2() = playUntil(30_000_000)
+
+    private fun playUntil(endTurn: Int): Int {
+        val indexes = IntArray(endTurn) { -1 }
+
+        numbers.dropLast(1).forEachIndexed { index, number -> indexes[number] = index + 1 }
+        var lastSpoken = numbers.last()
+
+        for (currentIndex in numbers.size until endTurn) {
+            val prevIndex = indexes[lastSpoken]
+            val nextNumber = if (prevIndex < 0) 0 else (currentIndex) - prevIndex
+
+            indexes[lastSpoken] = currentIndex
+            lastSpoken = nextNumber
         }
 
-        generateSequence(Pair(numbers.last(), numbers.size)) { (lastSpoken, currentIndex) ->
-            val prevIndex = indexes[lastSpoken] ?: -1
-            indexes[lastSpoken] = currentIndex
-            val result = if (prevIndex < 0) 0 else currentIndex - prevIndex
-
-            Pair(result, currentIndex + 1)
-        }.forEach { (number) -> yield(number) }
+        return lastSpoken
     }
-
-}
-
-fun main() {
-
-    val day = Day15("0,3,6")
-
-    val numbers = day.game.filterIndexed { index, number -> index == 30_000_000 - 1 }.first()
-    println(numbers)
-
-
-//    day.game.take(100).toList().forEach {
-//        println(it)
-//    }
-
 }
 
