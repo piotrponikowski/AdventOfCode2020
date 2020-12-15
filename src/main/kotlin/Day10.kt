@@ -16,7 +16,3 @@ class Day10(input: List<String>) {
         }.values.last()
 
 }
-
-
-
-
