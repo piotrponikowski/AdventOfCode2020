@@ -13,7 +13,7 @@ class Day13(input: List<String>) {
             generateSequence(time) { it + step }
                 .first { (it + bus.index) % bus.id == 0L }
                 .let { it to step * bus.id }
-        }.let { (time, step) -> time }
+        }.let { (time, _) -> time }
 
     data class Bus(val index: Int, val id: Long)
 }
