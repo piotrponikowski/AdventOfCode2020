@@ -5,7 +5,7 @@ class Day9(input: List<String>, private val preamble: Int = 25) {
     fun solve1() = numbers.windowed(preamble + 1)
         .map { Pair(it.dropLast(1), it.last()) }
         .first { (list, target) -> list.none { target - it in list } }
-        .let { it.second }
+        .let { (_, target) -> target }
 
     fun solve2() = solve1().let { invalid ->
         numbers.indices.mapNotNull { start ->
