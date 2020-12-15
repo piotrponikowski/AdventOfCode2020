@@ -16,7 +16,7 @@ class Day8(input: List<String>) {
         }
 
         companion object {
-            private val PATTERN = Regex("^([a-z]+) ([+-][0-9]+)\$")
+            private val PATTERN = Regex("^([a-z]+) ([+-][0-9]+)$")
 
             fun parse(input: String) = PATTERN.matchEntire(input)!!.destructured
                 .let { (operation, argument) -> Instruction(operation, argument.toInt()) }
