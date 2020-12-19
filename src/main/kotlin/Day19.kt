@@ -21,7 +21,7 @@ class Day19(input: String) {
         val logic = rules.getValue(refs.first())
         val remainingRefs = refs.drop(1)
 
-        return if (logic[1] in 'a'..'b') {
+        return if (logic[1] in listOf('a', 'b')) {
             if (message.startsWith(logic[1])) matchRules(message.drop(1), remainingRefs, rules)
             else false
         } else {
