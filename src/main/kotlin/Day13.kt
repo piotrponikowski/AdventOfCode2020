@@ -11,8 +11,8 @@ class Day13(input: List<String>) {
     fun solve2() = buses.drop(1)
         .fold(0L to buses.first().id) { (time, step), bus ->
             generateSequence(time) { it + step }
-                .first { (it + bus.index) % bus.id == 0L }
-                .let { it to step * bus.id }
+                .first { nextTime -> (nextTime + bus.index) % bus.id == 0L }
+                .let { nextTime -> nextTime to step * bus.id }
         }.let { (time, _) -> time }
 
     data class Bus(val index: Int, val id: Long)
