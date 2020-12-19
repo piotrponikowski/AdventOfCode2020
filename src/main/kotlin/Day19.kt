@@ -19,19 +19,17 @@ class Day19(input: String) {
         }
 
         val logic = rules.getValue(refs.first())
+        val remainingRefs = refs.drop(1)
 
         return if (logic[1] in 'a'..'b') {
-            if (message.startsWith(logic[1])) {
-                matchRules(message.drop(1), refs.drop(1), rules)
-            } else {
-                false
-            }
+            if (message.startsWith(logic[1])) matchRules(message.drop(1), remainingRefs, rules)
+            else false
         } else {
-            logic.split(" | ").any { nextRules ->
-                matchRules(message, nextRules.split(" ").map { it.toInt() } + refs.drop(1), rules)
+            logic.split(" | ").any { nextLogic ->
+                nextLogic.split(" ").map { it.toInt() }
+                    .let { nextRefs -> matchRules(message, nextRefs + remainingRefs, rules) }
             }
         }
-
     }
 
     companion object {
