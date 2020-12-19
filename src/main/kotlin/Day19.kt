@@ -18,19 +18,20 @@ class Day19(input: String) {
             return false
         }
 
-        rules.getValue(refs.first()).let { logic ->
-            return if (logic[1] in 'a'..'b') {
-                if (message.startsWith(logic[1])) {
-                    matchRules(message.drop(1), refs.drop(1), rules)
-                } else {
-                    false
-                }
+        val logic = rules.getValue(refs.first())
+
+        return if (logic[1] in 'a'..'b') {
+            if (message.startsWith(logic[1])) {
+                matchRules(message.drop(1), refs.drop(1), rules)
             } else {
-                logic.split(" | ").any { nextRules ->
-                    matchRules(message, nextRules.split(" ").map { it.toInt() } + refs.drop(1), rules)
-                }
+                false
+            }
+        } else {
+            logic.split(" | ").any { nextRules ->
+                matchRules(message, nextRules.split(" ").map { it.toInt() } + refs.drop(1), rules)
             }
         }
+
     }
 
     companion object {
@@ -45,13 +46,4 @@ class Day19(input: String) {
         private fun splitInput(input: String, group: Int) = input.split(lineSeparator().repeat(2))[group]
             .split(lineSeparator())
     }
-}
-
-fun main() {
-    val input = Utils.readText("day19.txt")
-    val day = Day19(input).solve2()
-
-
-    println(day)
-
 }
