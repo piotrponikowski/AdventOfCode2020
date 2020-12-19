@@ -10,7 +10,6 @@ class Day19(input: String) {
     fun solve2() = rules.let { oldRules -> oldRules + listOf(8 to "42 | 42 8", 11 to "42 31 | 42 11 31") }
         .let { newRules -> messages.count { message -> matchRules(message, listOf(0), newRules) } }
 
-
     private fun matchRules(message: String, refs: List<Int>, rules: Map<Int, String>): Boolean {
         if (message.isEmpty()) {
             return refs.isEmpty()
@@ -33,7 +32,6 @@ class Day19(input: String) {
     }
 
     companion object {
-
         fun parseRules(input: String) = splitInput(input, 0)
             .map { line -> line.split(":") }
             .map { (id, logic) -> id.toInt() to logic.trim() }
