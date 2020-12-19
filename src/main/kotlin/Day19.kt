@@ -3,33 +3,31 @@ import java.lang.System.lineSeparator
 class Day19(input: String) {
 
     val messages = parseMessages(input)
-    val rules1 = parseRules(input)
-    val rules2 = rules1 + listOf(8 to "42 | 42 8", 11 to "42 31 | 42 11 31")
+    val rules = parseRules(input)
 
-    fun solve1() = messages.count { message -> matchRules(message, listOf(0)) }
+    fun solve1() = messages.count { message -> matchRules(message, listOf(0), rules) }
 
-    fun solve2() = messages.count { message -> matchRules(message, listOf(0)) }
+    fun solve2() = rules.let { oldRules -> oldRules + listOf(8 to "42 | 42 8", 11 to "42 31 | 42 11 31") }
+        .let { newRules -> messages.count { message -> matchRules(message, listOf(0), newRules) } }
 
 
-    fun matchRules(message: String, messageRules: List<Int>): Boolean {
-//        println("#### $message, rules: $messageRules")
+    private fun matchRules(message: String, refs: List<Int>, rules: Map<Int, String>): Boolean {
         if (message.isEmpty()) {
-            return messageRules.isEmpty()
-        } else if (messageRules.isEmpty()) {
+            return refs.isEmpty()
+        } else if (refs.isEmpty()) {
             return false
         }
 
-        rules2.getValue(messageRules.first()).let { logic ->
-            if (logic[1] in 'a'..'b') {
-                return if (message.startsWith(logic[1])) {
-//                    println("matching: $message rules: $rules")
-                    matchRules(message.drop(1), messageRules.drop(1))
+        rules.getValue(refs.first()).let { logic ->
+            return if (logic[1] in 'a'..'b') {
+                if (message.startsWith(logic[1])) {
+                    matchRules(message.drop(1), refs.drop(1), rules)
                 } else {
                     false
                 }
             } else {
-                return logic.split(" | ").any { nextRules ->
-                    matchRules(message, nextRules.split(" ").map { it.toInt() } + messageRules.drop(1))
+                logic.split(" | ").any { nextRules ->
+                    matchRules(message, nextRules.split(" ").map { it.toInt() } + refs.drop(1), rules)
                 }
             }
         }
@@ -51,7 +49,7 @@ class Day19(input: String) {
 
 fun main() {
     val input = Utils.readText("day19.txt")
-    val day = Day19(input).solve1()
+    val day = Day19(input).solve2()
 
 
     println(day)
