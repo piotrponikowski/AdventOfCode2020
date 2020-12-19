@@ -1,94 +1,79 @@
+import java.lang.System.lineSeparator
+
 class Day11(input: List<String>) {
 
-    val board = Board(input)
+    private val startingState = input
+        .flatMapIndexed { y, row ->
+            row.mapIndexedNotNull { x, cell -> Point(x, y) to cell }
+        }.toMap()
 
-    fun solve1(): Int {
+    private val neighbours =
+        (-1..1).flatMap { dx ->
+            (-1..1).mapNotNull { dy ->
+                Point(dx, dy).takeIf { !(dx == 0 && dy == 0) }
+            }
+        }.toSet()
 
+    fun solve1() = solve(4, ::countNear)
+
+    fun solve2() = solve(5, ::countFar)
+
+    fun solve(min: Int, countMethod: (Map<Point, Char>, Point) -> Int): Int {
         val states = mutableSetOf<String>()
+        var state = startingState
 
-        while (!states.contains(board.hash())) {
-            states.add(board.hash())
-            board.step()
-            println(board.print())
+        while (!states.contains(print(state))) {
+            states += print(state)
+            state = solve(state, min, countMethod)
         }
 
-        return board.count()
+        return state.count { it.value == '#' }
     }
 
-    class Board(input: List<String>) {
-        var data = input.map { row -> row.toCharArray() }.toTypedArray()
+    fun solve(state: Map<Point, Char>, min: Int, countMethod: (Map<Point, Char>, Point) -> Int): Map<Point, Char> {
+        val nextState = mutableMapOf<Point, Char>()
 
-        fun hash() = data.joinToString { it.joinToString() }
+        state.forEach { (point, type) ->
+            val isSeat = type == 'L' || type == '#'
+            val occupiedNeighbours = countMethod(state, point)
 
-        fun print() = data.joinToString("\n") { it.joinToString("") }
-
-        fun count() = data.sumOf { row -> row.count { it == '#' } }
-
-        fun countOccupied(y: Int, x: Int) =
-            (-1..1).sumBy { dy ->
-                (-1..1).count { dx ->
-
-                    var occupied = false
-                    if(!(dx == 0 && dy == 0)) {
-                        var i = 1
-                        while (true) {
-                            val newx = x + dx * i
-                            val newy = y + dy * i
-
-
-                            if (newx < 0 || newy < 0 || newy >= data.size || newx >= data[0].size) {
-                                break
-                            } else if (data[newy][newx] == 'L') {
-                                break
-                            } else if (data[newy][newx] == '#') {
-                                occupied = true
-                                break
-                            }
-                            i++
-                        }
-                    }
-                    occupied
-
-//                    when {
-//                        dx == 0 && dy == 0 -> false
-//                        y + dy < 0 -> false
-//                        x + dx < 0 -> false
-//                        y + dy >= data.size -> false
-//                        x + dx >= data[0].size -> false
-//                        data[y + dy][x + dx] == '#' -> true
-//                        else -> false
-//                    }
-                }
+            nextState[point] = when {
+                !isSeat -> type
+                occupiedNeighbours == 0 -> '#'
+                occupiedNeighbours in min..8 -> 'L'
+                else -> type
             }
-
-
-        fun step() {
-            val next = data.map { it.clone() }.toTypedArray()
-            next.forEachIndexed { y, row ->
-                row.forEachIndexed { x, col ->
-                    if (data[y][x] != '.') {
-                        val occupied = countOccupied(y, x)
-                        next[y][x] = when (occupied) {
-                            0 -> '#'
-                            in 5..8 -> 'L'
-                            else -> data[y][x]
-                        }
-                    }
-                }
-            }
-
-            data = next
         }
+
+        return nextState
     }
 
-}
+    private fun print(state: Map<Point, Char>): String {
+        val maxX = state.keys.maxOf { it.x }
+        val maxY = state.keys.maxOf { it.x }
+
+        val result = StringBuilder()
+        (0..maxX).forEach { x ->
+            (0..maxY).forEach { y ->
+                result.append(state[Point(x, y)])
+            }
+            result.append(lineSeparator())
+        }
+        return result.toString()
+    }
+
+    private fun countNear(state: Map<Point, Char>, point: Point) =
+        neighbours.count { neighbour -> state[point + neighbour] == '#' }
 
 
-fun main() {
+    private fun countFar(state: Map<Point, Char>, point: Point) =
+        neighbours.count { neighbour ->
+            generateSequence(point + neighbour) { it + neighbour }
+                .first { state[it] != '.' }
+                .let { state[it] == '#' }
+        }
 
-    val data = Utils.readLines("day11.txt")
-
-    val answer = Day11(data).solve1()
-    println(answer)
-
+    data class Point(val x: Int, val y: Int) {
+        operator fun plus(other: Point) = Point(this.x + other.x, this.y + other.y)
+    }
 }
