@@ -18,54 +18,39 @@ class Day20(input: String) {
             }
     }
 
-    data class Tile(val id: Long, val data: List<List<Char>>) {
-        val edges = run {
-            val e1 = (0..9).map { x -> data[x][0] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            val e2 = (0..9).map { x -> data[x][9] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            val e3 = (0..9).map { y -> data[0][y] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            val e4 = (0..9).map { y -> data[9][y] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            listOf(e1, e2, e3, e4)
+    data class Tile(val id: Long, var data: List<List<Char>>) {
+        fun flip() = apply { data = data.reversed() }
+
+        fun rotate() = apply {
+            var copy = data.map { row -> row.map { cell -> cell }.toMutableList() }.toMutableList()
+            (0..9).forEach { x ->
+                (0..9).forEach { y ->
+                    copy[y][9 - x] = data[x][y]
+                }
+            }
+            data = copy
         }
 
-        val edgesFlipped1 = run {
-            val e1 =
-                (0..9).reversed().map { x -> data[x][0] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            val e2 =
-                (0..9).reversed().map { x -> data[x][9] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            val e3 = (0..9).map { y -> data[0][y] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            val e4 = (0..9).map { y -> data[9][y] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            listOf(e1, e2, e3, e4)
-        }
-
-        val edgesFlipped2 = run {
-            val e1 = (0..9).map { x -> data[x][0] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            val e2 = (0..9).map { x -> data[x][9] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            val e3 =
-                (0..9).reversed().map { y -> data[0][y] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            val e4 =
-                (0..9).reversed().map { y -> data[9][y] }.map { if (it == '#') '1' else '0' }.joinToString("").toLong(2)
-            listOf(e1, e2, e3, e4)
-        }
+        fun print() = data.joinToString("\n") { it.joinToString("") }
 
 
     }
 }
 
 fun main() {
-    val input = Utils.readText("day20.txt")
+    val input = Utils.readText("day20.txt", true)
     val day = Day20(input)
-    day.tiles.forEach { println("${it.id} ${it.edges} ${it.edgesFlipped1} ${it.edgesFlipped2}") }
 
-    val ids = day.tiles.flatMap { it.edges }
-    val corners = day.tiles.filter { tile ->
-        tile.edges.count { edge ->
-            edge in (day.tiles.filter { it.id != tile.id }.flatMap { it.edges }) ||
-            edge in (day.tiles.filter { it.id != tile.id }.flatMap { it.edgesFlipped1 }) ||
-            edge in (day.tiles.filter { it.id != tile.id }.flatMap { it.edgesFlipped2 })
-        } == 2
+    println(day.tiles[0].print())
+    println()
+    (1..4).forEach {
+        println(day.tiles[0].rotate().print())
+        println()
     }
-    corners.forEach { println(it.id) }
 
-    corners.map { it.id }.reduce { a, b -> a * b }.let { println(it) }
+//    println(day.tiles[0].print())
+//    println()
+//    println(day.tiles[0].flip().print())
+
 
 }
