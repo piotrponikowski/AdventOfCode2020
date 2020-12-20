@@ -1,4 +1,6 @@
+import java.lang.Math.*
 import java.lang.System.lineSeparator
+import kotlin.math.abs
 
 typealias TileData = List<List<Char>>
 
@@ -12,6 +14,16 @@ class Day20(input: String) {
         Neighbour(Point(0, -1), Tile::edgeTop, Tile::edgeBottom),
         Neighbour(Point(0, 1), Tile::edgeBottom, Tile::edgeTop)
     )
+
+    val monster = arrayOf(
+        "                  # ",
+        "#    ##    ##    ###",
+        " #  #  #  #  #  #   "
+    )
+
+    val monsterPoints = monster.flatMapIndexed { y, line ->
+        line.mapIndexedNotNull { x, cell -> Point(x, y).takeIf { cell == '#' } }
+    }
 
     fun solve() {
         val solvedTiles = mutableMapOf<Point, Tile>()
@@ -30,8 +42,8 @@ class Day20(input: String) {
                         unsolvedTiles.forEach { unsolvedTile ->
 
                             if (newSolved.isEmpty()) {
-                                outer@ for (flip in 1..3) {
-                                    for (rotation in 1..5) {
+                                outer@ for (flip in 1..2) {
+                                    for (rotation in 1..4) {
                                         val edge = neighbour.edge(solvedTile.data)
                                         val otherEdge = neighbour.other(unsolvedTile.data)
                                         if (edge == otherEdge) {
@@ -65,7 +77,74 @@ class Day20(input: String) {
             }
         }.reduce(Long::times)
 
+        val sizeX = abs(minX - maxX) + 1
+        val sizeY = abs(minY - maxY) + 1
+
+        val board = MutableList(sizeY * 10) { MutableList<Char>(sizeX * 10) { '0' } }
+
+        solvedTiles.forEach { (point, tile) ->
+            tile.data.forEachIndexed { y, row ->
+                row.forEachIndexed { x, cell ->
+                    if (x in 1..8 && y in 1..8) {
+                        val fx = point.x - minX
+                        val fy = point.y - minY
+                        board[fy * 10 + y][fx * 10 + x] = cell
+                    }
+                }
+            }
+        }
+
+        val trimmedBoard = board.map { line -> line.filter { it != '0' } }.filter { it.isNotEmpty() }
+
+        val final = Tile(0, trimmedBoard)
+
+
         println(result)
+        println(final.print())
+
+        val monsterSizeX = monsterPoints.maxOf { it.x }
+        val monsterSizeY = monsterPoints.maxOf { it.y }
+
+
+        for (flip in 1..2) {
+            for (rotation in 1..4) {
+                println(flip)
+                println(rotation)
+                println(final.print())
+                println()
+
+//                if(flip == 1 && rotation == 2) {
+//                    println()
+//                }
+
+                var monsters = 0
+                final.data.forEachIndexed { y, line ->
+                    line.forEachIndexed { x, cell ->
+//                        if(y == 3 && x == 2) {
+//                            println()
+//                        }
+
+                        if (x <= final.data[0].size - monsterSizeX && y <= final.data.size - monsterSizeY) {
+                            val hasMonster = monsterPoints.all { point -> final.data[y + point.y][x + point.x] == '#' }
+                            if (hasMonster) {
+                                monsters++
+                            }
+                        }
+                    }
+                }
+
+                if (monsters > 0) {
+                    val water = final.data.sumBy { it.count { it == '#' } }
+                    val occupied = monsters * monsterPoints.size
+                    println("monsters: $monsters, water: $water, occupied: $occupied, result: ${water - occupied}")
+
+                }
+                final.rotate()
+            }
+            final.flip()
+        }
+
+//        println(monsterPoints)
     }
 
     companion object {
@@ -84,14 +163,16 @@ class Day20(input: String) {
 
     data class Tile(val id: Long, var data: TileData) {
         fun flip() = apply { data = data.reversed() }
-        fun rotate() = apply { data = (0..9).map { x -> (0..9).map { y -> data[9 - y][x] } } }
+        fun rotate() =
+            apply { data = (data.indices).map { x -> (data.indices).map { y -> data[data.size - y - 1][x] } } }
+
         fun print() = data.joinToString("\n") { it.joinToString("") }
 
         companion object {
             fun edgeTop(data: TileData) = data[0].joinToString("")
-            fun edgeBottom(data: TileData) = data[9].joinToString("")
-            fun edgeLeft(data: TileData) = (0..9).map { y -> data[y][0] }.joinToString("")
-            fun edgeRight(data: TileData) = (0..9).map { y -> data[y][9] }.joinToString("")
+            fun edgeBottom(data: TileData) = data[data.size - 1].joinToString("")
+            fun edgeLeft(data: TileData) = (data.indices).map { y -> data[y][0] }.joinToString("")
+            fun edgeRight(data: TileData) = (data.indices).map { y -> data[y][data.size - 1] }.joinToString("")
         }
     }
 
