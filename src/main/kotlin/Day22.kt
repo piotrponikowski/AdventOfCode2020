@@ -1,5 +1,5 @@
 import java.lang.System.lineSeparator
-import java.util.*
+import kotlin.collections.ArrayList
 
 class Day22(input: String) {
 
@@ -9,10 +9,10 @@ class Day22(input: String) {
 
     fun solve2() = decks.let { (deck1, deck2) -> playWithSubGame(deck1, deck2).second.score() }
 
-    private fun play(deck1: LinkedList<Int>, deck2: LinkedList<Int>): Pair<Boolean, List<Int>> {
-        while (!deck1.isEmpty() && !deck2.isEmpty()) {
-            val card1 = deck1.pop()
-            val card2 = deck2.pop()
+    private fun play(deck1: ArrayList<Int>, deck2: ArrayList<Int>): Pair<Boolean, List<Int>> {
+        while (deck1.isNotEmpty() && deck2.isNotEmpty()) {
+            val card1 = deck1.removeFirst()
+            val card2 = deck2.removeFirst()
 
             if (card1 > card2) {
                 deck1.add(card1)
@@ -26,7 +26,7 @@ class Day22(input: String) {
         return if (deck1.size > 0) (true to deck1) else (false to deck2)
     }
 
-    private fun playWithSubGame(deck1: LinkedList<Int>, deck2: LinkedList<Int>): Pair<Boolean, List<Int>> {
+    private fun playWithSubGame(deck1: ArrayList<Int>, deck2: ArrayList<Int>): Pair<Boolean, List<Int>> {
 
         val states = mutableSetOf<Pair<List<Int>, List<Int>>>()
         while (deck1.isNotEmpty() && deck2.isNotEmpty()) {
@@ -35,11 +35,11 @@ class Day22(input: String) {
                 return (true to deck1)
             }
 
-            val card1 = deck1.pop()
-            val card2 = deck2.pop()
+            val card1 = deck1.removeFirst()
+            val card2 = deck2.removeFirst()
 
             val win = if (card1 <= deck1.size && card2 <= deck2.size) {
-                playWithSubGame(LinkedList(deck1.take(card1)), LinkedList(deck2.take(card2))).first
+                playWithSubGame(ArrayList(deck1.take(card1)), ArrayList(deck2.take(card2))).first
             } else {
                 card1 > card2
             }
@@ -61,6 +61,6 @@ class Day22(input: String) {
     companion object {
         fun parseDecks(input: String) = input.split(lineSeparator().repeat(2))
             .map { data -> data.split(lineSeparator()).drop(1).map { it.toInt() } }
-            .map { LinkedList(it) }
+            .map { ArrayList(it) }
     }
 }
