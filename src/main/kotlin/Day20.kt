@@ -4,16 +4,16 @@ typealias TileData = List<List<Char>>
 
 class Day20(input: String) {
 
-    val tiles = parseTiles(input)
+    private val tiles = parseTiles(input)
 
-    val neighbours = listOf(
+    private val neighbours = listOf(
         Neighbour(Point(-1, 0), Tile::edgeLeft, Tile::edgeRight),
         Neighbour(Point(1, 0), Tile::edgeRight, Tile::edgeLeft),
         Neighbour(Point(0, -1), Tile::edgeTop, Tile::edgeBottom),
         Neighbour(Point(0, 1), Tile::edgeBottom, Tile::edgeTop)
     )
 
-    val monsterPoints = arrayOf(
+    private val monsterPoints = arrayOf(
         "                  # ",
         "#    ##    ##    ###",
         " #  #  #  #  #  #   "
@@ -23,7 +23,14 @@ class Day20(input: String) {
         }
     }
 
-    fun solve(): Map<Point, Tile> {
+    fun solve1(): Long {
+        val solvedTiles = solveTiles()
+        val corners = solvedTiles.keys.corners()
+
+        return solvedTiles.filter { (point) -> point in corners }.map { (point, tile) -> tile.id }.reduce(Long::times)
+    }
+
+    fun solveTiles(): Map<Point, Tile> {
         val solvedTiles = mutableMapOf<Point, Tile>()
         solvedTiles[Point(0, 0)] = tiles.first()
 
@@ -31,7 +38,7 @@ class Day20(input: String) {
 
             solvedTiles.toList().forEach { (point, solvedTile) ->
                 val emptyNeighbours = neighbours.filter { neighbour -> point + neighbour.direction !in solvedTiles }
-                val unsolvedTiles = tiles.filter { tile -> tile.id !in solvedTiles.values.map { it.id } }
+                val unsolvedTiles = tiles.filter { tile -> tile.id !in solvedTiles.values.map { tile -> tile.id } }
 
                 emptyNeighbours.forEach { neighbour ->
                     unsolvedTiles.forEach { unsolvedTile ->
@@ -63,6 +70,13 @@ class Day20(input: String) {
             }
     }
 
+    fun Collection<Point>.minMax() = Pair(Point(minOf { it.x }, minOf { it.y }), Point(maxOf { it.x }, maxOf { it.y }))
+
+    fun Collection<Point>.corners() = minMax().let { (min, max) ->
+        listOf(Point(min.x, min.y), Point(min.x, max.y), Point(max.x, min.y), Point(max.x, max.y))
+    }
+
+
     data class Tile(val id: Long, val data: TileData) {
         fun flip() = copy(data = data.reversed())
         fun rotate() = copy(data = (data.indices).map { x -> (data.indices).map { y -> data[data.size - y - 1][x] } })
@@ -92,9 +106,9 @@ class Day20(input: String) {
 }
 
 fun main() {
-    val input = Utils.readText("day20.txt", true)
+    val input = Utils.readText("day20.txt")
     val day = Day20(input)
-    println(day.solve().map { (a, b) -> a to b.id })
+    println(day.solve1())
 //    println()
 
 //    println(Day20.Tile.edgeLeft(day.tiles[0].data))
@@ -103,6 +117,6 @@ fun main() {
 //    println(Day20.Tile.edgeBottom(day.tiles[0].data))
 
 
-    day.solve()
+    day.solveTiles()
 
 }
