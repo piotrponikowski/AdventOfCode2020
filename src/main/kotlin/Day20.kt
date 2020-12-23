@@ -30,6 +30,47 @@ class Day20(input: String) {
         return solvedTiles.filter { (point) -> point in corners }.map { (point, tile) -> tile.id }.reduce(Long::times)
     }
 
+    fun solve2(): Int {
+        val solvedTiles = solveTiles()
+        val croppedTiles = solvedTiles.mapValues { (_, tile) -> tile.crop() }
+        val (sizeX, sizeY) = solvedTiles.keys.size()
+        val (min, max) = solvedTiles.keys.minMax()
+
+        val mergedData = MutableList(sizeY * 8) { MutableList(sizeX * 8) { '0' } }
+        croppedTiles.forEach { (point, tile) ->
+            tile.data.forEachIndexed { y, row ->
+                row.forEachIndexed { x, cell ->
+                    val fx = point.x - min.x
+                    val fy = point.y - min.y
+                    mergedData[fy * 8 + y][fx * 8 + x] = cell
+                }
+            }
+        }
+
+        val mergedTile = Tile(0, mergedData)
+        val mergedTileSize = mergedTile.data.size
+
+        val (monsterSizeX, monsterSizeY) = monsterPoints.size()
+        val offsetX = mergedTileSize - monsterSizeX
+        val offsetY = mergedTileSize - monsterSizeY
+
+        val monsters = Tile.combinations(mergedTile).map { rotatedTile ->
+            val monsters = rotatedTile.data.mapIndexed { y, line ->
+                line.withIndex()
+                    .filter { (x, _) -> x <= offsetX && y <= offsetY }
+                    .count { (x, _) -> monsterPoints.all { point -> rotatedTile.data[y + point.y][x + point.x] == '#' } }
+            }.sum()
+
+            println()
+            println(rotatedTile.print())
+            println("monsters $monsters")
+            monsters
+        }.first { sum -> sum > 0 }
+
+        val waterCount = mergedTile.data.sumBy { line -> line.count { cell -> cell == '#' } }
+        return waterCount - (monsterPoints.size * monsters)
+    }
+
     fun solveTiles(): Map<Point, Tile> {
         val solvedTiles = mutableMapOf<Point, Tile>()
         solvedTiles[Point(0, 0)] = tiles.first()
@@ -76,10 +117,13 @@ class Day20(input: String) {
         listOf(Point(min.x, min.y), Point(min.x, max.y), Point(max.x, min.y), Point(max.x, max.y))
     }
 
+    fun Collection<Point>.size() = minMax().let { (min, max) -> (max.x - min.x) + 1 to (max.y - min.y) + 1 }
+
 
     data class Tile(val id: Long, val data: TileData) {
         fun flip() = copy(data = data.reversed())
         fun rotate() = copy(data = (data.indices).map { x -> (data.indices).map { y -> data[data.size - y - 1][x] } })
+        fun crop() = copy(data = data.drop(1).dropLast(1).map { line -> line.drop(1).dropLast(1) })
         fun print() = data.joinToString("\n") { it.joinToString("") }
 
         companion object {
