@@ -27,14 +27,14 @@ class Day20(input: String) {
         val solvedTiles = solveTiles()
         val corners = solvedTiles.keys.corners()
 
-        return solvedTiles.filter { (point) -> point in corners }.map { (point, tile) -> tile.id }.reduce(Long::times)
+        return solvedTiles.filter { (point) -> point in corners }.map { (_, tile) -> tile.id }.reduce(Long::times)
     }
 
     fun solve2(): Int {
         val solvedTiles = solveTiles()
         val croppedTiles = solvedTiles.mapValues { (_, tile) -> tile.crop() }
         val (sizeX, sizeY) = solvedTiles.keys.size()
-        val (min, max) = solvedTiles.keys.minMax()
+        val (min, _) = solvedTiles.keys.minMax()
 
         val mergedData = MutableList(sizeY * 8) { MutableList(sizeX * 8) { '0' } }
         croppedTiles.forEach { (point, tile) ->
@@ -55,23 +55,18 @@ class Day20(input: String) {
         val offsetY = mergedTileSize - monsterSizeY
 
         val monsters = Tile.combinations(mergedTile).map { rotatedTile ->
-            val monsters = rotatedTile.data.mapIndexed { y, line ->
+            rotatedTile.data.mapIndexed { y, line ->
                 line.withIndex()
                     .filter { (x, _) -> x <= offsetX && y <= offsetY }
                     .count { (x, _) -> monsterPoints.all { point -> rotatedTile.data[y + point.y][x + point.x] == '#' } }
             }.sum()
-
-            println()
-            println(rotatedTile.print())
-            println("monsters $monsters")
-            monsters
         }.first { sum -> sum > 0 }
 
         val waterCount = mergedTile.data.sumBy { line -> line.count { cell -> cell == '#' } }
         return waterCount - (monsterPoints.size * monsters)
     }
 
-    fun solveTiles(): Map<Point, Tile> {
+    private fun solveTiles(): Map<Point, Tile> {
         val solvedTiles = mutableMapOf<Point, Tile>()
         solvedTiles[Point(0, 0)] = tiles.first()
 
@@ -79,7 +74,7 @@ class Day20(input: String) {
 
             solvedTiles.toList().forEach { (point, solvedTile) ->
                 val emptyNeighbours = neighbours.filter { neighbour -> point + neighbour.direction !in solvedTiles }
-                val unsolvedTiles = tiles.filter { tile -> tile.id !in solvedTiles.values.map { tile -> tile.id } }
+                val unsolvedTiles = tiles.filter { tile -> tile.id !in solvedTiles.values.map { it.id } }
 
                 emptyNeighbours.forEach { neighbour ->
                     unsolvedTiles.forEach { unsolvedTile ->
@@ -124,7 +119,6 @@ class Day20(input: String) {
         fun flip() = copy(data = data.reversed())
         fun rotate() = copy(data = (data.indices).map { x -> (data.indices).map { y -> data[data.size - y - 1][x] } })
         fun crop() = copy(data = data.drop(1).dropLast(1).map { line -> line.drop(1).dropLast(1) })
-        fun print() = data.joinToString("\n") { it.joinToString("") }
 
         companion object {
             fun edgeTop(tile: Tile) = tile.data.first().joinToString("")
@@ -134,7 +128,7 @@ class Day20(input: String) {
 
             fun combinations(tile: Tile) = sequence {
                 var state = tile
-                (0..7).forEach { step ->
+                (1..8).forEach { step ->
                     yield(state)
                     state = if (step == 4) state.rotate().flip() else state.rotate()
                 }
@@ -147,20 +141,4 @@ class Day20(input: String) {
     }
 
     data class Neighbour(val direction: Point, val edge: (Tile) -> String, val otherEdge: (Tile) -> String)
-}
-
-fun main() {
-    val input = Utils.readText("day20.txt")
-    val day = Day20(input)
-    println(day.solve1())
-//    println()
-
-//    println(Day20.Tile.edgeLeft(day.tiles[0].data))
-//    println(Day20.Tile.edgeRight(day.tiles[0].data))
-//    println(Day20.Tile.edgeTop(day.tiles[0].data))
-//    println(Day20.Tile.edgeBottom(day.tiles[0].data))
-
-
-    day.solveTiles()
-
 }
