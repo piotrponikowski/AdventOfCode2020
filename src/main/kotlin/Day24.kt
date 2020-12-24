@@ -9,25 +9,22 @@ class Day24(input: List<String>) {
 
     fun solve1() = solveInitialMaze().count()
 
-    fun solve2(): Int {
-        var maze = solveInitialMaze()
-        repeat(100) {
-            val nextMaze = mutableSetOf<Point>()
-            val tilesToCheck = maze.flatMap { tile -> neighbours.values.map { neighbour -> tile + neighbour } + tile }
+    fun solve2() = (1..100).fold(solveInitialMaze()) { maze, _ -> nextDay(maze) }.count()
 
-            tilesToCheck.forEach { tileToCheck ->
-                val isBlack = maze.contains(tileToCheck)
-                val blackNeighbours = neighbours.values.count { neighbour -> maze.contains(tileToCheck + neighbour) }
+    private fun nextDay(maze: Set<Point>): Set<Point> {
+        val nextMaze = mutableSetOf<Point>()
+        val tilesToCheck = maze.flatMap { tile -> neighbours.values.map { neighbour -> tile + neighbour } + tile }
 
-                if ((isBlack && blackNeighbours in 1..2) || (!isBlack && blackNeighbours == 2)) {
-                    nextMaze.add(tileToCheck)
-                }
+        tilesToCheck.forEach { tileToCheck ->
+            val isBlack = maze.contains(tileToCheck)
+            val blackNeighbours = neighbours.values.count { neighbour -> maze.contains(tileToCheck + neighbour) }
+
+            if ((isBlack && blackNeighbours in 1..2) || (!isBlack && blackNeighbours == 2)) {
+                nextMaze.add(tileToCheck)
             }
-
-            maze = nextMaze
         }
 
-        return maze.count()
+        return nextMaze
     }
 
     private fun solveInitialMaze(): Set<Point> {
