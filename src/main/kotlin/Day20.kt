@@ -1,7 +1,5 @@
 import java.lang.System.lineSeparator
 
-typealias TileData = List<List<Char>>
-
 class Day20(input: String) {
 
     private val tiles = parseTiles(input)
@@ -114,8 +112,7 @@ class Day20(input: String) {
 
     fun Collection<Point>.size() = minMax().let { (min, max) -> (max.x - min.x) + 1 to (max.y - min.y) + 1 }
 
-
-    data class Tile(val id: Long, val data: TileData) {
+    data class Tile(val id: Long, val data: List<List<Char>>) {
         fun flip() = copy(data = data.reversed())
         fun rotate() = copy(data = (data.indices).map { x -> (data.indices).map { y -> data[data.size - y - 1][x] } })
         fun crop() = copy(data = data.drop(1).dropLast(1).map { line -> line.drop(1).dropLast(1) })
